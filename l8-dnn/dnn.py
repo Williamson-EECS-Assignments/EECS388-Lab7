@@ -78,66 +78,66 @@ first_frame = True
 while curFrame < NFRAMES:
     batch_frames = []
     batch_times = []
-    
+
     # Collect frames for a batch
     for _ in range(batch_size):
         if curFrame >= NFRAMES:
             break
-            
+
         cam_start = time.time()
         ret, img = cap.read()
         if not ret:
             break
-            
+
         prep_start = time.time()
-        
+
         # Preprocess the input frame
         img = cv2.resize(img, (200, 66))
         img = img / 255.0
-        
+
         batch_frames.append(img)
         batch_times.append((cam_start, prep_start))
-        
+
     if not batch_frames:
         break
-        
+
     # Convert list to numpy array for batch prediction
     batch_input = np.array(batch_frames)
-    
+
     # Perform batch prediction
     pred_start = time.time()
     predictions = model.predict(batch_input, verbose=1)
     pred_end = time.time()
-    
+
     # Process prediction results
     for i, prediction in enumerate(predictions):
         if i == 0 and first_frame:
             first_frame = False
             continue
-            
+
         rad = prediction[0]
         deg = rad2deg(rad)
-        
+
         cam_start, prep_start = batch_times[i]
-        
+
         # Calculate the timings for each step
         cam_time = (prep_start - cam_start) * 1000
         prep_time = (pred_start - prep_start) * 1000
-        
+
         # Distribute prediction time proportionally
         pred_time_per_frame = (pred_end - pred_start) * 1000 / len(batch_frames)
         pred_time = pred_time_per_frame
-        
+
         # Total time includes capture, preprocessing, and a portion of prediction
         tot_time = cam_time + prep_time + pred_time
-        
+
         print(f'pred: {deg:0.2f} deg. took: {tot_time:0.2f} ms | cam={cam_time:0.2f} prep={prep_time:0.2f} pred={pred_time:0.2f}')
-        
+
         # Add timings to lists
         if not (i == 0 and first_frame):
             tot_time_list.append(tot_time)
             curFrame += 1
-            
+
         # Wait for next period (only for the last frame in batch)
         if i == len(predictions) - 1 and is_periodic:
             wait_time = (period - tot_time) / 1000

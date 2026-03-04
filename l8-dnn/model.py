@@ -6,7 +6,7 @@ from keras import layers, models
 
 def create_model(input_shape):
     model = models.Sequential()
-    
+
     model.add(layers.Conv2D(24, (5, 5), strides=(2, 2), activation='relu', input_shape=input_shape))
     model.add(layers.Conv2D(36, (5, 5), strides=(2, 2), activation='relu'))
     model.add(layers.Conv2D(48, (5, 5), strides=(2, 2), activation='relu'))
@@ -27,5 +27,5 @@ def create_model(input_shape):
 model = create_model(input_shape=(66, 200, 3))
 
 # Load the saved model
-# model.load_weights("model/model.h5") 
+# model.load_weights("model/model.h5")
 # model.summary()
